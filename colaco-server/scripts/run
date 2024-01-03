@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euox pipefail
+
+go build -o ./bin/server/server cmd/server/main.go && ./bin/server/server

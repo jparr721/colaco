@@ -1,0 +1,4 @@
+BEGIN;
+ALTER TABLE promos
+DROP COLUMN price;
+COMMIT;

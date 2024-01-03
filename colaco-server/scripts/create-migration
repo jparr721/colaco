@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -euox pipefail
+
+# Make sure we are not running this from the `scripts` directory
+if [ -f migrate ]; then
+    echo "Please run this script from the root directory of the project"
+    exit 1
+fi
+
+# Make sure the first argument to the script is the name of the migration
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <migration name>"
+    exit 1
+fi
+
+migrate create -ext sql -dir db/migrations -seq $1
