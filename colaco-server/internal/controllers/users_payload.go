@@ -26,11 +26,11 @@ type UserIsAdminResponse struct {
 }
 
 type UserBalanceUpdateResponse struct {
-	NewBalance int `json:"new_balance"`
+	NewBalance float64 `json:"new_balance"`
 }
 
 type UserBalanceUpdateRequest struct {
-	Amount int `json:"amount"`
+	Amount float64 `json:"amount"`
 }
 
 // Bind implements render.Bind.

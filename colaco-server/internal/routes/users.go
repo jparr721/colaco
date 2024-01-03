@@ -104,7 +104,7 @@ func (u *UsersService) Deposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	balance, err := ctrl.ChangeBalance(data.Amount, r)
+	balance, err := ctrl.ChangeBalance(data.Amount, userID, r)
 	if err != nil {
 		zap.L().Error("Could not get user balance", zap.String("message", err.Error()))
 		render.Render(w, r, ErrRecordNotFound(err))
@@ -137,7 +137,7 @@ func (u *UsersService) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	balance, err := ctrl.ChangeBalance(-data.Amount, r)
+	balance, err := ctrl.ChangeBalance(-data.Amount, userID, r)
 	if err != nil {
 		zap.L().Error("Could not get user balance", zap.String("message", err.Error()))
 		render.Render(w, r, ErrRecordNotFound(err))

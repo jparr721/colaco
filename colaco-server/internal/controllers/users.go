@@ -71,17 +71,19 @@ func (u *UsersController) CreateUser(r *http.Request) (User, error) {
 	return user, nil
 }
 
-func (u *UsersController) ChangeBalance(amount int, r *http.Request) (int, error) {
+func (u *UsersController) ChangeBalance(amount float64, id string, r *http.Request) (float64, error) {
 	db, ok := r.Context().Value("db").(*db.ColacoDB)
 	if !ok {
 		return -1, errors.New("could not get database connection")
 	}
 
-	var balance int
-	err := db.GetOne("SELECT balance FROM users WHERE id = $1", &balance, "1")
+	var balanceResp UserBalanceResponse
+	err := db.GetOne("SELECT balance FROM users WHERE id = $1", &balanceResp, id)
 	if err != nil {
 		return -1, errors.New("could not get user")
 	}
+
+	balance := balanceResp.Balance
 
 	if balance+amount < 0 {
 		return balance, errors.New("insufficient funds")
@@ -89,7 +91,7 @@ func (u *UsersController) ChangeBalance(amount int, r *http.Request) (int, error
 
 	balance += amount
 
-	_, err = db.Exec("UPDATE users SET balance = $1 WHERE id = $2", balance, "1")
+	_, err = db.Exec("UPDATE users SET balance = $1 WHERE id = $2", balance, id)
 	if err != nil {
 		return -1, errors.New("could not update user")
 	}
