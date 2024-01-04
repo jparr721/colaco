@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 
@@ -13,11 +12,11 @@ import (
 )
 
 type ColacoDBInterface interface {
+	Init() error
 	Get(query string, dest any, args ...interface{}) error
 	GetOne(query string, dest any, args ...interface{}) error
-	Create(query string, args ...interface{}) error
+	Create(query string, args ...interface{}) (string, error)
 	Update(query string, args ...interface{}) error
-	Delete(query string, args ...interface{}) error
 }
 
 // ColacoDB is a wrapper around sql.DB that provides additional methods and also
@@ -27,7 +26,7 @@ type ColacoDB struct {
 }
 
 // Init initializes a database connection in a way that allows us to mock for unit tests.
-func (db *ColacoDB) Init() {
+func (db *ColacoDB) Init() error {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
@@ -38,18 +37,21 @@ func (db *ColacoDB) Init() {
 	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
 		dbUser, dbPassword, dbName, dbHost, dbPort)
 
+	zap.L().Info("Connecting to database", zap.String("connection_string", connStr))
 	conn, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	err = conn.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	zap.L().Info("Successfully connected to database!")
 	db.DB = conn
+
+	return nil
 }
 
 // Get is a wrapper around sql.DB.Query that scans the results into a slice of structs.
@@ -126,10 +128,5 @@ func (db *ColacoDB) Update(query string, args ...interface{}) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-// Delete is a wrapper around sql.DB.Exec that deletes a row in the database.
-func (db *ColacoDB) Delete(query string, dest any, args ...interface{}) error {
 	return nil
 }

@@ -90,12 +90,7 @@ func (u *UsersService) Deposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := chi.URLParam(r, "userID")
-	if userID == "" {
-		zap.L().Error("Could not get user id")
-		render.Status(r, http.StatusInternalServerError)
-		return
-	}
+	userID := r.Header.Get("x-auth-token")
 
 	data := &controllers.UserBalanceUpdateRequest{}
 	if err := render.Bind(r, data); err != nil {
@@ -123,12 +118,7 @@ func (u *UsersService) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := chi.URLParam(r, "userID")
-	if userID == "" {
-		zap.L().Error("Could not get user id")
-		render.Status(r, http.StatusInternalServerError)
-		return
-	}
+	userID := r.Header.Get("x-auth-token")
 
 	data := &controllers.UserBalanceUpdateRequest{}
 	if err := render.Bind(r, data); err != nil {
@@ -146,4 +136,24 @@ func (u *UsersService) Withdraw(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, &controllers.UserBalanceUpdateResponse{NewBalance: balance})
+}
+
+func (u *UsersService) Me(w http.ResponseWriter, r *http.Request) {
+	ctrl, ok := r.Context().Value("UsersController").(*controllers.UsersController)
+	if !ok {
+		zap.L().Error("Could not get controller")
+		render.Status(r, http.StatusInternalServerError)
+		return
+	}
+
+	userID := r.Header.Get("x-auth-token")
+	user, err := ctrl.GetMe(userID, r)
+	if err != nil {
+		zap.L().Error("failed to create user", zap.String("message", err.Error()))
+		render.Status(r, http.StatusInternalServerError)
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, user)
 }

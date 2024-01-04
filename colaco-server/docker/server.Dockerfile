@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Build the Go application
-RUN go build -o server .
+RUN go build -o server ./cmd/server/main.go
 
 # Expose port 8000
 EXPOSE 8000

@@ -20,7 +20,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Generate PostgreSQL URL using the .env file
-POSTGRES_URL="postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+POSTGRES_URL="postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}"
 
 # Run migrations using golang-migrate
 migrate -database "${POSTGRES_URL}?sslmode=disable" -path db/migrations $1

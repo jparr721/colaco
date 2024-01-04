@@ -18,8 +18,24 @@ func SodasControllerContext(ctrl *SodasController) func(next http.Handler) http.
 	}
 }
 
+func (s *SodasController) GetPromoPrice(id string, r *http.Request) (float64, error) {
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
+	if !ok {
+		return 0, errors.New("could not get database connection")
+	}
+
+	var promo Promo
+	// Get the most recent promo for this soda
+	err := db.GetOne("SELECT * FROM promos WHERE soda_id = $1 ORDER BY start_date", &promo, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return promo.Price, nil
+}
+
 func (s *SodasController) GetAll(r *http.Request) ([]Soda, error) {
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return nil, errors.New("could not get database connection")
 	}
@@ -30,12 +46,27 @@ func (s *SodasController) GetAll(r *http.Request) ([]Soda, error) {
 		return nil, err
 	}
 
+	for i := range sodas {
+		// Get the promo price for this soda, if there is an entry
+		promoPrice, err := s.GetPromoPrice(sodas[i].ID, r)
+		if err != nil {
+			// If the error is just "sql: no rows in result set", then we can ignore it
+			if err.Error() == "sql: no rows in result set" {
+				continue
+			}
+
+			return nil, err
+		}
+
+		sodas[i].Cost = promoPrice
+	}
+
 	return sodas, nil
 }
 
 func (s *SodasController) GetOneById(id string, r *http.Request) (Soda, error) {
 	var soda Soda
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return soda, errors.New("could not get database connection")
 	}
@@ -45,12 +76,23 @@ func (s *SodasController) GetOneById(id string, r *http.Request) (Soda, error) {
 		return soda, errors.New("could not get soda")
 	}
 
+	// Get the promo price for this soda, if there is an entry
+	promoPrice, err := s.GetPromoPrice(soda.ID, r)
+	if err != nil {
+		// If the error is just "sql: no rows in result set", then we can ignore it
+		if err.Error() != "sql: no rows in result set" {
+			return soda, err
+		}
+	}
+
+	soda.Cost = promoPrice
+
 	return soda, nil
 }
 
 func (s *SodasController) ChangeStockById(id string, amount int, r *http.Request) (Soda, error) {
 	var soda Soda
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return soda, errors.New("could not get database connection")
 	}

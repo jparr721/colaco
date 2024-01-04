@@ -20,7 +20,7 @@ func UsersControllerContext(ctrl *UsersController) func(next http.Handler) http.
 }
 
 func (u *UsersController) GetBalance(id string, r *http.Request) (float64, error) {
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return 0, errors.New("could not get database connection")
 	}
@@ -35,7 +35,7 @@ func (u *UsersController) GetBalance(id string, r *http.Request) (float64, error
 }
 
 func (u *UsersController) GetIsAdmin(id string, r *http.Request) (bool, error) {
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return false, errors.New("could not get database connection")
 	}
@@ -51,7 +51,7 @@ func (u *UsersController) GetIsAdmin(id string, r *http.Request) (bool, error) {
 
 func (u *UsersController) CreateUser(r *http.Request) (User, error) {
 	var user User
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return user, errors.New("could not get database connection")
 	}
@@ -72,7 +72,7 @@ func (u *UsersController) CreateUser(r *http.Request) (User, error) {
 }
 
 func (u *UsersController) ChangeBalance(amount float64, id string, r *http.Request) (float64, error) {
-	db, ok := r.Context().Value("db").(*db.ColacoDB)
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
 	if !ok {
 		return -1, errors.New("could not get database connection")
 	}
@@ -91,11 +91,25 @@ func (u *UsersController) ChangeBalance(amount float64, id string, r *http.Reque
 
 	balance += amount
 
-	_, err = db.Exec("UPDATE users SET balance = $1 WHERE id = $2", balance, id)
+	err = db.Update("UPDATE users SET balance = $1 WHERE id = $2", balance, id)
 	if err != nil {
 		return -1, errors.New("could not update user")
 	}
 
 	return balance, nil
+}
 
+func (u *UsersController) GetMe(id string, r *http.Request) (User, error) {
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
+	if !ok {
+		return User{}, errors.New("could not get database connection")
+	}
+
+	var user User
+	err := db.GetOne("SELECT * FROM users WHERE id = $1", &user, id)
+	if err != nil {
+		return user, errors.New("could not get user")
+	}
+
+	return user, nil
 }
