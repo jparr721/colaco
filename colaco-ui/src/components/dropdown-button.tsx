@@ -72,6 +72,19 @@ const DropdownButton = ({ items, onSelectCheckout, children, backgroundColor }: 
     const handleCheckout = () => {
         onSelectCheckout(items);
         setIsOpen(false);
+
+        const jsonString = JSON.stringify(items, null, 2);
+
+        const blob = new Blob([jsonString], { type: "application/json" });
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "receipt.json";
+        a.click();
+
+        URL.revokeObjectURL(url);
     };
 
     // If the user clicks outside of the dropdown, close it
