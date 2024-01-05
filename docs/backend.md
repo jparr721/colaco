@@ -6,6 +6,183 @@ $ ./scripts/migrate
 ```
 Then go to the `frontend.md` doc to run the front-end. For development, the go api uses the incredible `air` tool to get hot-reloading of the api, to run it, you just need to `cd colaco-server` and run `air -c air.conf` and it'll start right up (after you run `cp .env.example .env`).
 
+## Recipes
+
+#### Promos
+Make a Promo
+```
+curl --request POST \
+  --url http://localhost:8000/v1/promos \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: <YOUR_OKEN>' \
+  --data '{
+	"start_date": "2024-01-04T14:01:15-05:00",
+	"end_date": "2024-01-31T14:01:15-05:00",
+	"soda_id": "SODA_UUID",
+	"price": 0.5
+}'
+```
+
+Get Promos
+```
+curl --request GET \
+  --url http://localhost:8000/v1/promos \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN'
+```
+
+Get One Promo
+```
+curl --request GET \
+  --url http://localhost:8000/v1/promos/1154f299-0811-4112-bdf4-3c16f8adb046 \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN'
+```
+
+#### Users
+Get Currently Signed in User
+```
+curl --request GET \
+  --url http://localhost:8000/v1/users/me \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN'
+```
+
+Withdraw From Signed In User Account
+```
+curl --request PUT \
+  --url http://localhost:8000/v1/users/me/withdraw \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN' \
+  --data '{
+	"amount": 10
+}'
+```
+
+Deposit To Signed In User Account
+```
+curl --request PUT \
+  --url http://localhost:8000/v1/users/me/deposit \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN' \
+  --data '{
+	"amount": 10
+}'
+```
+
+Get The Signed In User's Balance
+```
+curl --request GET \
+  --url http://localhost:8000/v1/users/me/balance \
+  --header 'User-Agent: insomnia/8.5.1'
+```
+
+Create A New User
+```
+curl --request POST \
+  --url http://localhost:8000/v1/users/ \
+  --header 'User-Agent: insomnia/8.5.1'
+```
+
+#### Sodas
+Sell A Soda
+```
+curl --request PUT \
+  --url http://localhost:8000/v1/sodas/SODA_ID/sell \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --data '{
+	"amount": 10
+}'
+```
+
+Restock A Soda
+```
+curl --request PUT \
+  --url http://localhost:8000/v1/sodas/SODA_ID/restock \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN' \
+  --data '{
+	"amount": 10
+}'
+```
+
+Get All Sodas
+```
+curl --request GET \
+  --url http://localhost:8000/v1/sodas \
+  --header 'User-Agent: insomnia/8.5.1'
+```
+
+Get One Soda
+```
+curl --request GET \
+  --url http://localhost:8000/v1/sodas/SODA_ID \
+  --header 'User-Agent: insomnia/8.4.5'
+```
+
+You get the idea. All the routes are here
+
+```go
+func MakeColaCoV1Router(r chi.Router) {
+	r.Use(controllers.UsersControllerContext(&controllers.UsersController{}))
+	r.Use(controllers.SodasControllerContext(&controllers.SodasController{}))
+	r.Use(controllers.PromosControllerContext(&controllers.PromosController{}))
+
+	r.Route("/healthz", func(r chi.Router) {
+		r.Get("/", Healthz)
+	})
+
+	r.Route("/sodas", func(r chi.Router) {
+		ss := &SodasService{}
+
+		r.Get("/", ss.GetAll)
+		r.Route("/{sodaID}", func(r chi.Router) {
+			r.Get("/", ss.GetOne)
+			r.Get("/price", ss.GetOne)
+			r.Put("/sell", ss.Sell)
+
+			r.Route("/", func(r chi.Router) {
+				r.Use(adminOnly)
+				r.Put("/restock", ss.Restock)
+			})
+		})
+	})
+
+	r.Route("/users", func(r chi.Router) {
+		us := &UsersService{}
+
+		r.Post("/", us.Create)
+
+		r.Route("/me", func(r chi.Router) {
+			r.Use(authenticatedUser)
+			r.Get("/", us.Me)
+			r.Get("/is_admin", us.IsAdmin)
+			r.Get("/balance", us.Balance)
+			r.Put("/deposit", us.Deposit)
+			r.Put("/withdraw", us.Withdraw)
+		})
+	})
+
+	r.Route("/promos", func(r chi.Router) {
+		ps := &PromosService{}
+
+		// Admins only!
+		r.Use(adminOnly)
+
+		r.Get("/", ps.GetAll)
+		r.Post("/", ps.Create)
+		r.Route("/{promoID}", func(r chi.Router) {
+			r.Get("/", ps.GetOne)
+		})
+	})
+}
+```
+
 # Server Architecture
 This section provides a comprehensive and critical analysis of the architectural decisions and technical considerations involved in this project. It aims to articulate the rationale behind these choices, identify areas where complexity was deliberately minimized, and suggest potential enhancements for future iterations. Explanations for specific design choices will be elaborated upon as necessary.
 
