@@ -7,6 +7,7 @@ $ ./scripts/migrate
 Then go to the `frontend.md` doc to run the front-end. For development, the go api uses the incredible `air` tool to get hot-reloading of the api, to run it, you just need to `cd colaco-server` and run `air -c air.conf` and it'll start right up (after you run `cp .env.example .env`).
 
 ## Recipes
+`YOUR_AUTH_TOKEN` is the uuid associated with your account in the browser cookies.
 
 #### Promos
 Make a Promo
@@ -15,7 +16,7 @@ curl --request POST \
   --url http://localhost:8000/v1/promos \
   --header 'Content-Type: application/json' \
   --header 'User-Agent: insomnia/8.5.1' \
-  --header 'x-auth-token: <YOUR_OKEN>' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN' \
   --data '{
 	"start_date": "2024-01-04T14:01:15-05:00",
 	"end_date": "2024-01-31T14:01:15-05:00",
