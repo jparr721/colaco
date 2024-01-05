@@ -1,3 +1,4 @@
+The design doc is below this section.
 # "Yeah, yeah, just show me how to run the damn thing"
 ```
 $ cp .env.docker .env
