@@ -26,7 +26,7 @@ func (s *SodasController) GetPromoPrice(id string, r *http.Request) (float64, er
 
 	var promo Promo
 	// Get the most recent promo for this soda
-	err := db.GetOne("SELECT * FROM promos WHERE soda_id = $1 ORDER BY start_date", &promo, id)
+	err := db.GetOne("SELECT * FROM promos WHERE soda_id = $1 AND end_date >= CURRENT_DATE ORDER BY start_date", &promo, id)
 	if err != nil {
 		return 0, err
 	}
