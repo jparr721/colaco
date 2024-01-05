@@ -1,5 +1,7 @@
 # Colaco
 
+[![Mine](docs/my_frontend.png)](docs/my_frontend.png)
+
 ## User Story
 
 **Title:** Virtual Vending Machine Development for ColaCo
