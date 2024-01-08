@@ -31,11 +31,25 @@ type SodaStockChangeRequest struct {
 	Amount int `json:"amount"`
 }
 
+type SodaPriceChangeRequest struct {
+	Cost int `json:"cost"`
+}
+
 // Bind implements render.Bind, to post-process check the requisite fields after unmarshaling
 func (s *SodaStockChangeRequest) Bind(r *http.Request) error {
 	// Make sure all fields are present, returning an error otherwise
 	if s.Amount == 0 || s.Amount < 0 {
 		return errors.New("missing field `amount` or insufficient quantity supplied")
+	}
+
+	return nil
+}
+
+// Bind implements render.Bind, to post-process check the requisite fields after unmarshaling
+func (s *SodaPriceChangeRequest) Bind(r *http.Request) error {
+	// Make sure all fields are present, returning an error otherwise
+	if s.Cost == 0 || s.Cost < 0 {
+		return errors.New("missing field `cost` or insufficient quantity supplied")
 	}
 
 	return nil

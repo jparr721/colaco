@@ -69,6 +69,7 @@ func MakeColaCoV1Router(r chi.Router) {
 			r.Get("/", ss.GetOne)
 			r.Get("/price", ss.GetOne)
 			r.Put("/sell", ss.Sell)
+			r.Put("/set_price", ss.UpdatePrice)
 
 			r.Route("/", func(r chi.Router) {
 				r.Use(adminOnly)

@@ -117,3 +117,31 @@ func (s *SodasController) ChangeStockById(id string, amount int, r *http.Request
 	soda.CurrentQuantity = soda.CurrentQuantity + amount
 	return soda, nil
 }
+
+func (s *SodasController) UpdateSodaPrice(id string, amount int, r *http.Request) (Soda, error) {
+	var soda Soda
+	db, ok := r.Context().Value("db").(db.ColacoDBInterface)
+	if !ok {
+		return soda, errors.New("could not get database connection")
+	}
+
+	soda, err := s.GetOneById(id, r)
+	if err != nil {
+		return soda, err
+	}
+
+	// Can we make this change? If not, reject.
+	if soda.Cost+float64(amount) < 0 {
+		return soda, errors.New("could not change price")
+	}
+
+	// Otherwise, make the update
+	err = db.Update("UPDATE sodas SET cost = cost + $1 WHERE id = $2", amount, id)
+	if err != nil {
+		return soda, errors.New("could not update soda")
+	}
+
+	// Update the existing record and return
+	soda.Cost = soda.Cost + float64(amount)
+	return soda, nil
+}

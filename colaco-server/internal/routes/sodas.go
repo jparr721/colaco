@@ -122,3 +122,36 @@ func (s *SodasService) Sell(w http.ResponseWriter, r *http.Request) {
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, soda)
 }
+
+func (s *SodasService) UpdatePrice(w http.ResponseWriter, r *http.Request) {
+	ctrl, ok := r.Context().Value("SodasController").(*controllers.SodasController)
+	if !ok {
+		zap.L().Error("Could not get controller")
+		render.Status(r, http.StatusInternalServerError)
+		return
+	}
+
+	sodaId := chi.URLParam(r, "sodaID")
+	if sodaId == "" {
+		zap.L().Error("Could not get soda id")
+		render.Status(r, http.StatusInternalServerError)
+		return
+	}
+
+	data := &controllers.SodaPriceChangeRequest{}
+	if err := render.Bind(r, data); err != nil {
+		zap.L().Error("Could not bind request", zap.String("message", err.Error()))
+		render.Render(w, r, ErrBadRequest(err))
+		return
+	}
+
+	soda, err := ctrl.UpdateSodaPrice(sodaId, data.Cost, r)
+	if err != nil {
+		zap.L().Error("Could not get soda", zap.String("message", err.Error()))
+		render.Render(w, r, ErrRecordNotFound(err))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, soda)
+}
