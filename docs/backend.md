@@ -1,6 +1,7 @@
 The design doc is below this section.
 # "Yeah, yeah, just show me how to run the damn thing"
 ```
+$ cd colaco-server
 $ cp .env.docker .env
 $ docker-compose up --build
 $ ./scripts/migrate
