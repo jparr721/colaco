@@ -130,10 +130,10 @@ curl --request GET \
 Change A Soda Price
 ```
 curl --request PUT \
-  --url http://localhost:8000/v1/sodas/e648bf1c-5c51-41a4-9494-58c95e7a79ce/set_price \
+  --url http://localhost:8000/v1/sodas/SODA_ID/set_price \
   --header 'Content-Type: application/json' \
   --header 'User-Agent: insomnia/8.5.1' \
-  --header 'x-auth-token: 4538629d-52b8-48ac-8bf1-ea2b97465a68' \
+  --header 'x-auth-token: YOUR_AUTH_TOKEN' \
   --data '{
 	"cost": 10
 }'
