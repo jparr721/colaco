@@ -127,6 +127,18 @@ curl --request GET \
   --header 'User-Agent: insomnia/8.4.5'
 ```
 
+Change A Soda Price
+```
+curl --request PUT \
+  --url http://localhost:8000/v1/sodas/e648bf1c-5c51-41a4-9494-58c95e7a79ce/set_price \
+  --header 'Content-Type: application/json' \
+  --header 'User-Agent: insomnia/8.5.1' \
+  --header 'x-auth-token: 4538629d-52b8-48ac-8bf1-ea2b97465a68' \
+  --data '{
+	"cost": 10
+}'
+```
+
 You get the idea. All the routes are here
 
 ```go
@@ -147,6 +159,7 @@ func MakeColaCoV1Router(r chi.Router) {
 			r.Get("/", ss.GetOne)
 			r.Get("/price", ss.GetOne)
 			r.Put("/sell", ss.Sell)
+			r.Put("/set_price", ss.UpdatePrice)
 
 			r.Route("/", func(r chi.Router) {
 				r.Use(adminOnly)
