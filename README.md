@@ -41,4 +41,4 @@
    - An easy way for admins to update soda prices.
   
 ## Deliverable
-Please go do `doc/backend.md` to see how to get this application running as well as a full layout of the system and design considerations.
+Please go to `doc/backend.md` to see how to get this application running as well as a full layout of the system and design considerations.
